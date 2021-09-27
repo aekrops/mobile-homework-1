@@ -38,8 +38,9 @@ class _RandomWordsState extends State<RandomWords> {
       body: _buildSuggestions(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _suggestions.addAll(generateWordPairs().take(5));
-          setState(() {}); // refresh page
+          setState(() {
+            _suggestions.addAll(generateWordPairs().take(5));
+          }); // refresh page
         },
         child: const Icon(Icons.plus_one),
         backgroundColor: Colors.green,
@@ -50,7 +51,6 @@ class _RandomWordsState extends State<RandomWords> {
   Widget _buildSuggestions() {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemCount: _suggestions.length,
       itemBuilder: (context, item) {
         return (item < _suggestions.length)
             ? _buildRow(_suggestions[item])
@@ -96,14 +96,15 @@ class _RandomWordsState extends State<RandomWords> {
           trailing: const Icon(Icons.delete),
           onTap: () {
             if (_saved.contains(pair)) {
-              _saved.remove(pair);
-              setState(() {}); // refresh page
-              Navigator.pop(context);
+              setState(() {
+                _saved.remove(pair);
+                Navigator.pop(context);
+              }); // refresh page
             }
           },
         );
       });
-      final divided = tiles.isNotEmpty
+      final dividedItems = tiles.isNotEmpty
           ? ListTile.divideTiles(context: context, tiles: tiles).toList()
           : <Widget>[];
       return Scaffold(
@@ -113,13 +114,14 @@ class _RandomWordsState extends State<RandomWords> {
             IconButton(
                 icon: const Icon(Icons.delete_forever),
                 onPressed: () {
-                  _saved.clear();
-                  setState(() {}); // refresh page
-                  Navigator.pop(context);
+                  setState(() {
+                    _saved.clear();
+                    Navigator.pop(context);
+                  }); // refresh page
                 })
           ],
         ),
-        body: ListView(children: divided),
+        body: ListView(children: dividedItems),
       );
     }));
   }
