@@ -9,7 +9,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Startup Name Generator',
       theme: ThemeData(
-        primaryColor: Colors.white,
+        primaryColor: Colors.blue,
       ),
       home: RandomWords(),
     );
@@ -36,6 +36,15 @@ class _RandomWordsState extends State<RandomWords> {
         ],
       ),
       body: _buildSuggestions(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _suggestions.addAll(generateWordPairs().take(5));
+          }); // refresh page
+        },
+        child: const Icon(Icons.plus_one),
+        backgroundColor: Colors.green,
+      ),
     );
   }
 
@@ -43,65 +52,77 @@ class _RandomWordsState extends State<RandomWords> {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (context, item) {
-        if (item.isOdd) return const Divider();
-        final index = item ~/ 2;
-        if (index >= _suggestions.length) {
-          _suggestions.addAll(generateWordPairs().take(10));
-        }
-        return _buildRow(_suggestions[index]);
+        return (item < _suggestions.length)
+            ? _buildRow(_suggestions[item])
+            : Container(color: Colors.white);
       },
     );
   }
 
   Widget _buildRow(WordPair pair) {
     final alreadySaved = _saved.contains(pair);
-    return ListTile(
-      title: Text(
-        pair.asPascalCase,
-        style: _biggerFont,
-      ),
-      trailing: Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
-      ),
-      onTap: () {
-        setState(() {
-          if (alreadySaved) {
-            _saved.remove(pair);
-          } else {
-            _saved.add(pair);
-          }
-        });
-      },
-    );
-  }
-  void _pushSaved() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          final tiles = _saved.map(
-              (WordPair pair) {
-                return ListTile(
-                  title: Text(
-                    pair.asPascalCase,
-                    style: _biggerFont,
-                  ),
-                );
-              }
-          );
-          final divided = tiles.isNotEmpty
-              ? ListTile.divideTiles(context: context, tiles: tiles).toList()
-              : <Widget>[];
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('Saved Suggestions'),
+    return (alreadySaved)
+        ? Container(color: Colors.white)
+        : ListTile(
+            title: Text(
+              pair.asPascalCase,
+              style: _biggerFont,
             ),
-            body: ListView(children: divided),
+            trailing: Icon(
+              alreadySaved ? Icons.favorite : Icons.favorite_border,
+              color: alreadySaved ? Colors.red : null,
+            ),
+            onTap: () {
+              setState(() {
+                if (alreadySaved) {
+                  _saved.remove(pair);
+                } else {
+                  _saved.add(pair);
+                }
+              });
+            },
           );
-        }
-      )
-    );
+  }
+
+  void _pushSaved() {
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
+      final tiles = _saved.map((WordPair pair) {
+        return ListTile(
+          title: Text(
+            pair.asPascalCase,
+            style: _biggerFont,
+          ),
+          trailing: const Icon(Icons.delete),
+          onTap: () {
+            if (_saved.contains(pair)) {
+              setState(() {
+                _saved.remove(pair);
+                Navigator.pop(context);
+              }); // refresh page
+            }
+          },
+        );
+      });
+      final dividedItems = tiles.isNotEmpty
+          ? ListTile.divideTiles(context: context, tiles: tiles).toList()
+          : <Widget>[];
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Saved Suggestions'),
+          actions: [
+            IconButton(
+                icon: const Icon(Icons.delete_forever),
+                onPressed: () {
+                  setState(() {
+                    _saved.clear();
+                    Navigator.pop(context);
+                  }); // refresh page
+                })
+          ],
+        ),
+        body: ListView(children: dividedItems),
+      );
+    }));
   }
 }
-
-
